@@ -112,3 +112,68 @@ class ClientesDAO(object):
         cur.close()
         conn.close()
         return sucesso
+    
+
+    def listar_favoritos(self, cliente_id):
+        """
+        Retorna lista de restaurantes favoritos do cliente.
+        """
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT r.id, r.nome, r.endereco, r.categoria
+            FROM cliente_favoritos cf
+            JOIN restaurantes r ON r.id = cf.restaurante_id
+            WHERE cf.cliente_id = %s
+            ORDER BY r.nome
+            """,
+            (cliente_id,)
+        )
+        favoritos = cur.fetchall()
+
+        cur.close()
+        conn.close()
+        return favoritos  # lista de tuplas (id, nome, endereco, categoria)
+
+    def adicionar_favorito(self, cliente_id, restaurante_id):
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute(
+        "SELECT 1 FROM restaurantes WHERE id = %s",
+        (restaurante_id,)
+    )
+        existe = cur.fetchone()
+
+        if not existe:
+            cur.close()
+            conn.close()
+            return False  
+
+        
+        cur.execute(
+            "INSERT INTO cliente_favoritos (cliente_id, restaurante_id) VALUES (%s, %s)",
+            (cliente_id, restaurante_id)
+        )
+        conn.commit()
+
+        sucesso = (cur.rowcount == 1)
+        cur.close()
+        conn.close()
+        return sucesso
+
+    def remover_favorito(self, cliente_id, restaurante_id):
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute(
+            "DELETE FROM cliente_favoritos WHERE cliente_id = %s AND restaurante_id = %s",
+            (cliente_id, restaurante_id)
+        )
+        conn.commit()
+
+        sucesso = (cur.rowcount == 1)
+        cur.close()
+        conn.close()
+        return sucesso

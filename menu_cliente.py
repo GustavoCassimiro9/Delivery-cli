@@ -12,14 +12,17 @@ def menu_cliente():
     print("6 - Listar Telefones do Cliente")
     print("7 - Adicionar Telefone ao Cliente")
     print("8 - Remover Telefone do Cliente")
+    print("9 - Listar Restaurantes Favoritos do Cliente")
+    print("10 - Adicionar Restaurante Favorito")
+    print("11 - Remover Restaurante Favorito")
     print("0 - Voltar")
     print("============================")
 
     try:
-        opcao = int(input("Digite uma opção [0-8]: "))
+        opcao = int(input("Digite uma opção [0-11]: "))
     except ValueError:
         print("Opção inválida.")
-        return 
+        return
 
     if opcao == 1:
         return menu_listar_todos_clientes()
@@ -37,8 +40,14 @@ def menu_cliente():
         return menu_adicionar_telefone_cliente()
     elif opcao == 8:
         return menu_remover_telefone_cliente()
+    elif opcao == 9:
+        return menu_listar_favoritos_cliente()
+    elif opcao == 10:
+        return menu_adicionar_favorito_cliente()
+    elif opcao == 11:
+        return menu_remover_favorito_cliente()
     elif opcao == 0:
-        return 
+        return
     else:
         print("Opção inválida.")
         return menu_cliente()
@@ -51,23 +60,23 @@ def menu_listar_todos_clientes():
         print("Nenhum registro encontrado")
     else:
         for c in clientes:
-            print(f"Código = {c.codigo} | Nome = {c.nome} | Endereço = {c.endereco}")
+            print(f"ID = {c.codigo} | Nome = {c.nome} | Endereço = {c.endereco}")
 
     return menu_cliente()
 
 def menu_listar_um_cliente():
     dao = ClientesDAO()
     try:
-        codigo = int(input("Digite o código do cliente: "))
+        id_cliente = int(input("Digite o ID do cliente: "))
     except ValueError:
-        print("Código inválido.")
+        print("ID inválido.")
         return menu_cliente()
 
-    c = dao.listar(codigo)
+    c = dao.listar(id_cliente)
     if c is None:
         print("Nenhum registro encontrado")
     else:
-        print(f"Código = {c.codigo}")
+        print(f"ID = {c.codigo}")
         print(f"Nome = {c.nome}")
         print(f"Endereço = {c.endereco}")
 
@@ -79,6 +88,14 @@ def menu_listar_um_cliente():
         else:
             print("Nenhum telefone cadastrado.")
 
+        favoritos = dao.listar_favoritos(c.codigo)
+        if favoritos:
+            print("Restaurantes favoritos:")
+            for (rid, rnome, rend, rcat) in favoritos:
+                print(f"- ID {rid} | {rnome} | {rend} | {rcat}")
+        else:
+            print("Nenhum restaurante favorito cadastrado.")
+
     return menu_cliente()
 
 def menu_inserir_um_cliente():
@@ -87,45 +104,36 @@ def menu_inserir_um_cliente():
     endereco = input("Digite o endereço do cliente: ")
 
     sucesso = dao.cadastrar_cliente(nome, endereco)
-    if sucesso:
-        print("Cliente cadastrado com sucesso")
-    else:
-        print("Falha ao cadastrar cliente")
+    print("Cliente cadastrado com sucesso" if sucesso else "Falha ao cadastrar cliente")
 
     return menu_cliente()
 
 def menu_atualizar_um_cliente():
     dao = ClientesDAO()
+    try:
+        id_cliente = int(input("Digite o ID do cliente: "))
+    except ValueError:
+        print("ID inválido.")
+        return menu_cliente()
+
     nome = input("Digite o nome do cliente: ")
     endereco = input("Digite o endereço do cliente: ")
 
-    try:
-        codigo = int(input("Digite o código do cliente: "))
-    except ValueError:
-        print("Código inválido.")
-        return menu_cliente()
-
-    sucesso = dao.atualizar(nome, endereco, codigo)
-    if sucesso:
-        print("Cliente atualizado com sucesso")
-    else:
-        print("Falha ao atualizar cliente")
+    sucesso = dao.atualizar(nome, endereco, id_cliente)
+    print("Cliente atualizado com sucesso" if sucesso else "Falha ao atualizar cliente")
 
     return menu_cliente()
 
 def menu_remover_um_cliente():
     dao = ClientesDAO()
     try:
-        codigo = int(input("Digite o código do cliente: "))
+        id_cliente = int(input("Digite o ID do cliente: "))
     except ValueError:
-        print("Código inválido.")
+        print("ID inválido.")
         return menu_cliente()
 
-    sucesso = dao.remover(codigo)
-    if sucesso:
-        print("Cliente removido com sucesso")
-    else:
-        print("Falha ao remover cliente")
+    sucesso = dao.remover(id_cliente)
+    print("Cliente removido com sucesso" if sucesso else "Falha ao remover cliente")
 
     return menu_cliente()
 
@@ -134,12 +142,12 @@ def menu_remover_um_cliente():
 def menu_listar_telefones_cliente():
     dao = ClientesDAO()
     try:
-        codigo = int(input("Digite o código do cliente: "))
+        id_cliente = int(input("Digite o ID do cliente: "))
     except ValueError:
-        print("Código inválido.")
+        print("ID inválido.")
         return menu_cliente()
 
-    telefones = dao.listar_telefones(codigo)
+    telefones = dao.listar_telefones(id_cliente)
     if not telefones:
         print("Nenhum telefone encontrado.")
     else:
@@ -152,37 +160,79 @@ def menu_listar_telefones_cliente():
 def menu_adicionar_telefone_cliente():
     dao = ClientesDAO()
     try:
-        codigo = int(input("Digite o código do cliente: "))
+        id_cliente = int(input("Digite o ID do cliente: "))
     except ValueError:
-        print("Código inválido.")
+        print("ID inválido.")
         return menu_cliente()
 
-    ddd = input("Digite o DDD: ")
-    numero = input("Digite o número: ")
+    ddd = input("Digite o DDD: ").strip()
+    numero = input("Digite o número: ").strip()
 
-    sucesso = dao.adicionar_telefone(codigo, ddd, numero)
-    if sucesso:
-        print("Telefone adicionado com sucesso")
-    else:
-        print("Falha ao adicionar telefone")
+    sucesso = dao.adicionar_telefone(id_cliente, ddd, numero)
+    print("Telefone adicionado com sucesso" if sucesso else "Falha ao adicionar telefone")
 
     return menu_cliente()
 
 def menu_remover_telefone_cliente():
     dao = ClientesDAO()
     try:
-        codigo = int(input("Digite o código do cliente: "))
+        id_cliente = int(input("Digite o ID do cliente: "))
     except ValueError:
-        print("Código inválido.")
+        print("ID inválido.")
         return menu_cliente()
 
-    ddd = input("Digite o DDD: ")
-    numero = input("Digite o número: ")
+    ddd = input("Digite o DDD: ").strip()
+    numero = input("Digite o número: ").strip()
 
-    sucesso = dao.remover_telefone(codigo, ddd, numero)
-    if sucesso:
-        print("Telefone removido com sucesso")
+    sucesso = dao.remover_telefone(id_cliente, ddd, numero)
+    print("Telefone removido com sucesso" if sucesso else "Falha ao remover telefone")
+
+    return menu_cliente()
+
+# --------- FAVORITOS ---------
+
+def menu_listar_favoritos_cliente():
+    dao = ClientesDAO()
+    try:
+        id_cliente = int(input("Digite o ID do cliente: "))
+    except ValueError:
+        print("ID inválido.")
+        return menu_cliente()
+
+    favoritos = dao.listar_favoritos(id_cliente)
+    if not favoritos:
+        print("Nenhum restaurante favorito encontrado.")
     else:
-        print("Falha ao remover telefone")
+        print("Restaurantes favoritos do cliente:")
+        for (rid, rnome, rend, rcat) in favoritos:
+            print(f"- ID {rid} | {rnome} | {rend} | {rcat}")
+
+    return menu_cliente()
+
+def menu_adicionar_favorito_cliente():
+    dao = ClientesDAO()
+    try:
+        id_cliente = int(input("Digite o ID do cliente: "))
+        restaurante_id = int(input("Digite o ID do restaurante: "))
+    except ValueError:
+        print("ID inválido.")
+        return menu_cliente()
+
+    sucesso = dao.adicionar_favorito(id_cliente, restaurante_id)
+    print("Favorito adicionado com sucesso" if sucesso else "Falha ao adicionar favorito ou restaurante nao existe")
+
+    return menu_cliente()
+
+def menu_remover_favorito_cliente():
+    dao = ClientesDAO()
+    try:
+        id_cliente = int(input("Digite o ID do cliente: "))
+        restaurante_id = int(input("Digite o ID do restaurante: "))
+    except ValueError:
+        print("ID inválido.")
+        return menu_cliente()
+
+    sucesso = dao.remover_favorito(id_cliente, restaurante_id)
+    print("Favorito removido com sucesso" if sucesso else "Falha ao remover favorito")
 
     return menu_cliente()
