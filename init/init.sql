@@ -1,118 +1,123 @@
 CREATE TABLE clientes (
-  id SERIAL PRIMARY KEY,
-  nome VARCHAR(100) NOT NULL,
-  endereco VARCHAR(255) NOT NULL
+  id serial NOT NULL,
+  nome character varying NOT NULL,
+  endereco character varying NOT NULL,
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE restaurantes (
-  id SERIAL PRIMARY KEY,
-  nome VARCHAR(100) NOT NULL,
-  endereco VARCHAR(255) NOT NULL,
-  categoria VARCHAR(50) NOT NULL
-);
-
-CREATE TABLE entregadores (
-  id SERIAL PRIMARY KEY,
-  nome VARCHAR(100) NOT NULL
+  id serial NOT NULL,
+  nome character varying NOT NULL,
+  endereco character varying NOT NULL,
+  categoria character varying NOT NULL,
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE produtos (
-  id SERIAL PRIMARY KEY,
-  restaurante_id INT NOT NULL,
-  nome VARCHAR(100) NOT NULL,
-  descricao TEXT,
-  preco NUMERIC(10,2) NOT NULL,
-
-  CONSTRAINT fk_produto_restaurante
+  id serial NOT NULL,
+  restaurante_id int NOT NULL,
+  nome character varying NOT NULL,
+  descricao character varying NOT NULL,
+  preco float NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_produtos_restaurante
     FOREIGN KEY (restaurante_id)
-    REFERENCES restaurantes(id)
+    REFERENCES restaurantes (id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE entregadores (
+  id serial NOT NULL,
+  nome character varying NOT NULL,
+  descricao character varying NOT NULL,
+  preco float NOT NULL,
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE pedidos (
-  id SERIAL PRIMARY KEY,
-  cliente_id INT NOT NULL,
-  restaurante_id INT NOT NULL,
-  entregador_id INT,
-  status VARCHAR(30) NOT NULL,
-  endereco_entrega VARCHAR(255) NOT NULL,
-
-  CONSTRAINT fk_pedido_cliente
+  id serial NOT NULL,
+  cliente_id int NOT NULL,
+  restaurante_id int NOT NULL,
+  entregador_id int NOT NULL,
+  nome character varying NOT NULL,
+  status character varying NOT NULL,
+  endereco_entrega character varying NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_pedidos_cliente
     FOREIGN KEY (cliente_id)
-    REFERENCES clientes(id),
-
-  CONSTRAINT fk_pedido_restaurante
+    REFERENCES clientes (id)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_pedidos_restaurante
     FOREIGN KEY (restaurante_id)
-    REFERENCES restaurantes(id),
-
-  CONSTRAINT fk_pedido_entregador
+    REFERENCES restaurantes (id)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_pedidos_entregador
     FOREIGN KEY (entregador_id)
-    REFERENCES entregadores(id)
+    REFERENCES entregadores (id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE item_pedidos (
-  id SERIAL PRIMARY KEY,
-  pedido_id INT NOT NULL,
-  produto_id INT NOT NULL,
-  quantidade INT NOT NULL,
-  preco_unitario NUMERIC(10,2) NOT NULL,
-  subtotal NUMERIC(10,2) NOT NULL,
-
-  CONSTRAINT fk_item_pedido
+  id serial NOT NULL,
+  pedido_id int NOT NULL,
+  produto_id int NOT NULL,
+  quantidade int NOT NULL,
+  preco float NOT NULL,
+  subtotal float GENERATED ALWAYS AS (preco * quantidade) STORED,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_item_pedidos_pedido
     FOREIGN KEY (pedido_id)
-    REFERENCES pedidos(id),
-
-  CONSTRAINT fk_item_produto
+    REFERENCES pedidos (id)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_item_pedidos_produto
     FOREIGN KEY (produto_id)
-    REFERENCES produtos(id)
+    REFERENCES produtos (id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE cliente_favoritos (
-  cliente_id INT NOT NULL,
-  restaurante_id INT NOT NULL,
-
-  PRIMARY KEY (cliente_id, restaurante_id),
-
-  CONSTRAINT fk_favorito_cliente
+  cliente_id int NOT NULL,
+  restaurante_id int NOT NULL,
+  CONSTRAINT pk_cf PRIMARY KEY (cliente_id, restaurante_id),
+  CONSTRAINT fk_cf_cliente
     FOREIGN KEY (cliente_id)
-    REFERENCES clientes(id),
-
-  CONSTRAINT fk_favorito_restaurante
+    REFERENCES clientes (id)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_cf_restaurante
     FOREIGN KEY (restaurante_id)
-    REFERENCES restaurantes(id)
+    REFERENCES restaurantes (id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE cliente_telefone (
-  cliente_id INT NOT NULL,
-  ddd VARCHAR(3) NOT NULL,
-  numero VARCHAR(15) NOT NULL,
-
-  PRIMARY KEY (cliente_id, ddd, numero),
-
-  CONSTRAINT fk_telefone_cliente
+  cliente_id int NOT NULL,
+  numero int NOT NULL,
+  ddd int NOT NULL,
+  CONSTRAINT pk_ct PRIMARY KEY (cliente_id, numero, ddd),
+  CONSTRAINT fk_ct_cliente
     FOREIGN KEY (cliente_id)
-    REFERENCES clientes(id)
+    REFERENCES clientes (id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE restaurante_telefone (
-  restaurante_id INT NOT NULL,
-  ddd VARCHAR(3) NOT NULL,
-  numero VARCHAR(15) NOT NULL,
-
-  PRIMARY KEY (restaurante_id, ddd, numero),
-
-  CONSTRAINT fk_telefone_restaurante
+  restaurante_id int NOT NULL,
+  numero int NOT NULL,
+  ddd int NOT NULL,
+  CONSTRAINT pk_rt PRIMARY KEY (restaurante_id, numero, ddd),
+  CONSTRAINT fk_rt_restaurante
     FOREIGN KEY (restaurante_id)
-    REFERENCES restaurantes(id)
+    REFERENCES restaurantes (id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE entregador_telefone (
-  entregador_id INT NOT NULL,
-  ddd VARCHAR(3) NOT NULL,
-  numero VARCHAR(15) NOT NULL,
-
-  PRIMARY KEY (entregador_id, ddd, numero),
-
-  CONSTRAINT fk_telefone_entregador
+  entregador_id int NOT NULL,
+  numero int NOT NULL,
+  ddd int NOT NULL,
+  CONSTRAINT pk_et PRIMARY KEY (entregador_id, numero, ddd),
+  CONSTRAINT fk_et_entregador
     FOREIGN KEY (entregador_id)
-    REFERENCES entregadores(id)
+    REFERENCES entregadores (id)
+    ON DELETE CASCADE
 );
