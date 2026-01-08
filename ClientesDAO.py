@@ -1,4 +1,4 @@
-from db import get_connection
+from db import get_connection, existe_id
 from Clientes import Clientes
 class ClientesDAO(object):
     def listarTodas(self):
@@ -18,6 +18,8 @@ class ClientesDAO(object):
         return resultado
     # Retornar cliente pelo codigo
     def listar(self, id):
+        if not existe_id("clientes", int(id)):
+            return None
         c = None
         conn = get_connection()
         cur = conn.cursor()
@@ -50,6 +52,8 @@ class ClientesDAO(object):
         return sucesso
     #atualizar dados ciente
     def atualizar(self, nome, endereco, id):
+        if not existe_id("clientes", int(id)):
+            return False
         sucesso = False
         conn = get_connection()
         cur = conn.cursor()
@@ -62,6 +66,8 @@ class ClientesDAO(object):
         return sucesso
     #remover pessoa
     def remover(self, id):
+        if not existe_id("clientes", int(id)):
+            return False
         sucesso = False
         conn = get_connection()
         cur = conn.cursor()
@@ -73,6 +79,8 @@ class ClientesDAO(object):
         conn.close()
         return sucesso
     def listar_telefones(self, cliente_id):
+        if not existe_id("clientes", int(cliente_id)):
+            return []
         conn = get_connection()
         cur = conn.cursor()
         cur.execute(
@@ -84,6 +92,8 @@ class ClientesDAO(object):
         conn.close()
         return telefones
     def adicionar_telefone(self, cliente_id, ddd, numero):
+        if not existe_id("clientes", int(cliente_id)):
+            return []
         sucesso = False
         conn = get_connection()
         cur = conn.cursor()
@@ -99,6 +109,8 @@ class ClientesDAO(object):
         return sucesso
 
     def remover_telefone(self, cliente_id, ddd, numero):
+        if not existe_id("clientes", int(cliente_id)):
+            return []
         sucesso = False
         conn = get_connection()
         cur = conn.cursor()
@@ -115,9 +127,8 @@ class ClientesDAO(object):
     
 
     def listar_favoritos(self, cliente_id):
-        """
-        Retorna lista de restaurantes favoritos do cliente.
-        """
+        if not existe_id("clientes", int(cliente_id)):
+            return []
         conn = get_connection()
         cur = conn.cursor()
         cur.execute(
@@ -137,6 +148,10 @@ class ClientesDAO(object):
         return favoritos  # lista de tuplas (id, nome, endereco, categoria)
 
     def adicionar_favorito(self, cliente_id, restaurante_id):
+        if not existe_id("clientes", int(cliente_id)):
+            return False
+        if not existe_id("restaurantes", int(restaurante_id)):
+            return False
         conn = get_connection()
         cur = conn.cursor()
 
@@ -164,6 +179,10 @@ class ClientesDAO(object):
         return sucesso
 
     def remover_favorito(self, cliente_id, restaurante_id):
+        if not existe_id("clientes", int(cliente_id)):
+            return False
+        if not existe_id("restaurantes", int(restaurante_id)):
+            return False
         conn = get_connection()
         cur = conn.cursor()
 

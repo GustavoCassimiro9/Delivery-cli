@@ -1,10 +1,13 @@
-from db import get_connection
+from db import get_connection, existe_id
 from Pedidos import Pedidos
 from ItemPedido import ItemPedido
 
 class PedidosDAO(object):
 
     def listar_pedidos_cliente(self, cliente_id):
+        if not existe_id("clientes", int(cliente_id)):
+            return []
+
         resultado = []
         conn = get_connection()
         cur = conn.cursor()
@@ -47,8 +50,10 @@ class PedidosDAO(object):
         conn.close()
         return resultado
 
-
     def listar_pedidos_restaurante(self, restaurante_id):
+        if not existe_id("restaurantes", int(restaurante_id)):
+            return []
+
         resultado = []
         conn = get_connection()
         cur = conn.cursor()
@@ -91,8 +96,10 @@ class PedidosDAO(object):
         conn.close()
         return resultado
 
-
     def listar_pedidos_entregador(self, entregador_id):
+        if not existe_id("entregadores", int(entregador_id)):
+            return []
+
         resultado = []
         conn = get_connection()
         cur = conn.cursor()
@@ -125,7 +132,7 @@ class PedidosDAO(object):
             p.restaurante_id = linha[3]
             p.nome_restaurante = linha[4]
             p.entregador_id = linha[5]
-            p.nome_entregador = linha[6]   
+            p.nome_entregador = linha[6]
             p.nome = linha[7]
             p.status = linha[8]
             p.endereco_entrega = linha[9]
@@ -135,10 +142,10 @@ class PedidosDAO(object):
         conn.close()
         return resultado
 
-
-
-
     def listar(self, pedido_id):
+        if not existe_id("pedidos", int(pedido_id)):
+            return None
+
         p = None
         conn = get_connection()
         cur = conn.cursor()
@@ -171,8 +178,14 @@ class PedidosDAO(object):
         conn.close()
         return p
 
-
     def criar_pedido(self, cliente_id, restaurante_id, entregador_id, nome, status, endereco):
+        if not existe_id("clientes", int(cliente_id)):
+            return None
+        if not existe_id("restaurantes", int(restaurante_id)):
+            return None
+        if not existe_id("entregadores", int(entregador_id)):
+            return None
+
         conn = get_connection()
         cur = conn.cursor()
 
@@ -181,14 +194,7 @@ class PedidosDAO(object):
             (cliente_id, restaurante_id, entregador_id, nome, status, endereco_entrega)
             VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING id
-        """, (
-            cliente_id,
-            restaurante_id,
-            entregador_id,
-            nome,
-            status,
-            endereco
-        ))
+        """, (cliente_id, restaurante_id, entregador_id, nome, status, endereco))
 
         pedido_id = cur.fetchone()[0]
         conn.commit()
@@ -196,9 +202,11 @@ class PedidosDAO(object):
         conn.close()
         return pedido_id
 
-
     def atualizar_status(self, pedido_id, status):
-        sucesso = False
+       
+        if not existe_id("pedidos", int(pedido_id)):
+            return False
+
         conn = get_connection()
         cur = conn.cursor()
 
@@ -206,46 +214,57 @@ class PedidosDAO(object):
             "UPDATE pedidos SET status = %s WHERE id = %s",
             (status, pedido_id)
         )
-
         conn.commit()
-        if cur.rowcount == 1:
-            sucesso = True
 
+        sucesso = (cur.rowcount == 1)
         cur.close()
         conn.close()
         return sucesso
 
-
     def adicionar_item(self, pedido_id, produto_id, quantidade):
-        sucesso = False
+        
+        if not existe_id("pedidos", int(pedido_id)):
+            return False
+        if not existe_id("produtos", int(produto_id)):
+            return False
+
         conn = get_connection()
         cur = conn.cursor()
 
-        cur.execute(
-            "SELECT preco FROM produtos WHERE id = %s",
-            (produto_id,)
-        )
-        resultado = cur.fetchone()
+        cur.execute("SELECT restaurante_id FROM pedidos WHERE id = %s", (pedido_id,))
+        row_pedido = cur.fetchone()
+        if not row_pedido:
+            cur.close(); conn.close()
+            return False
+        restaurante_pedido = row_pedido[0]
 
-        if resultado:
-            preco = resultado[0]
+        cur.execute("SELECT preco, restaurante_id FROM produtos WHERE id = %s", (produto_id,))
+        row_produto = cur.fetchone()
+        if not row_produto:
+            cur.close(); conn.close()
+            return False
+        preco, restaurante_produto = row_produto
 
-            cur.execute("""
-                INSERT INTO item_pedidos
-                (pedido_id, produto_id, quantidade, preco)
-                VALUES (%s, %s, %s, %s)
-            """, (pedido_id, produto_id, quantidade, preco))
+        if restaurante_produto != restaurante_pedido:
+            cur.close(); conn.close()
+            return False
 
-            conn.commit()
-            if cur.rowcount == 1:
-                sucesso = True
+        cur.execute("""
+            INSERT INTO item_pedidos (pedido_id, produto_id, quantidade, preco)
+            VALUES (%s, %s, %s, %s)
+        """, (pedido_id, produto_id, quantidade, preco))
+
+        conn.commit()
+        sucesso = (cur.rowcount == 1)
 
         cur.close()
         conn.close()
         return sucesso
 
-
     def listar_itens_pedido(self, pedido_id):
+        if not existe_id("pedidos", int(pedido_id)):
+            return []
+
         resultado = []
         conn = get_connection()
         cur = conn.cursor()
@@ -260,6 +279,7 @@ class PedidosDAO(object):
             FROM item_pedidos i
             JOIN produtos pr ON pr.id = i.produto_id
             WHERE i.pedido_id = %s
+            ORDER BY i.id
         """, (pedido_id,))
 
         for linha in cur.fetchall():

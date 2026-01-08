@@ -100,7 +100,7 @@ def menu_listar_pedidos_cliente():
 
     pedidos = dao.listar_pedidos_cliente(cliente_id)
     if not pedidos:
-        print("Nenhum pedido encontrado.")
+        print("Nenhum pedido encontrado (ou cliente não existe).")
         return menu_pedidos()
     cliente_nome = pedidos[0].nome_cliente
     print("\n==============================")
@@ -127,7 +127,7 @@ def menu_listar_pedidos_restaurante():
 
     pedidos = dao.listar_pedidos_restaurante(restaurante_id)
     if not pedidos:
-        print("Nenhum pedido encontrado.")
+        print("Nenhum pedido encontrado (ou restaurante não existe).")
         return menu_pedidos()
 
     restaurante_nome = pedidos[0].nome_restaurante
@@ -153,7 +153,7 @@ def menu_listar_pedidos_entregadores():
 
     pedidos = dao.listar_pedidos_entregador(entregador_id)
     if not pedidos:
-        print("Nenhum pedido encontrado.")
+        print("Nenhum pedido encontrado (ou entregador não existe).")
         return menu_pedidos()
 
     # imprime o entregador UMA VEZ
@@ -180,6 +180,9 @@ def menu_listar_itens_pedido():
     pedido_id = input("ID do pedido: ")
 
     itens = dao.listar_itens_pedido(pedido_id)
+    if not itens:
+        print("Nenhum item encontrado (ou pedido não existe).")
+        return menu_pedidos()
     for item in itens:
         print(
             f"{item.nome_produto} | "
@@ -196,6 +199,13 @@ def menu_cancelar_pedido():
     pedido_id = input("ID do pedido: ")
 
     p = dao.listar(pedido_id)
+    if not p:
+        print("Pedido não existe.")
+        return menu_pedidos()
+
+    if p.status != StatusPedido.PENDENTE.value:
+        print(f"Só é possível cancelar pedido PENDENTE (atual: {p.status}).")
+        return menu_pedidos()
     if p and p.status == StatusPedido.PENDENTE.value:
         dao.atualizar_status(pedido_id, StatusPedido.CANCELADO.value)
 
@@ -207,6 +217,13 @@ def menu_finalizar_pedido():
     pedido_id = input("ID do pedido: ")
 
     p = dao.listar(pedido_id)
+    if not p:
+        print("Pedido não existe.")
+        return
+
+    if p.status != StatusPedido.PENDENTE.value:
+        print(f"Só é possível finalizar pedido PENDENTE (atual: {p.status}).")
+        return
     if p and p.status == StatusPedido.PENDENTE.value:
         dao.atualizar_status(pedido_id, StatusPedido.FINALIZADO.value)
 
