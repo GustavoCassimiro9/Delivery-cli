@@ -15,9 +15,11 @@ def menu_pedidos():
     print("============================")
     print("1 - Criar Pedido")
     print("2 - Listar Pedidos do Cliente")
-    print("3 - Listar Itens do Pedido")
-    print("4 - Cancelar Pedido")
-    print("5 - Finalizar Pedido")
+    print("3 - Listar Pedidos do Restaurante")
+    print("4 - Listar Pedidos do Entregador")
+    print("5 - Listar Itens do Pedido")
+    print("6 - Cancelar Pedido")
+    print("7 - Finalizar Pedido")
     print("0 - Voltar")
     print("============================")
 
@@ -28,10 +30,14 @@ def menu_pedidos():
     elif opcao == "2":
         menu_listar_pedidos_cliente()
     elif opcao == "3":
-        menu_listar_itens_pedido()
+        menu_listar_pedidos_restaurante()
     elif opcao == "4":
-        menu_cancelar_pedido()
+        menu_listar_pedidos_entregadores()
     elif opcao == "5":
+        menu_listar_itens_pedido()
+    elif opcao == "6":
+        menu_cancelar_pedido()
+    elif opcao == "7":
         menu_finalizar_pedido()
 
 
@@ -90,11 +96,81 @@ def menu_criar_pedido():
 
 def menu_listar_pedidos_cliente():
     dao = PedidosDAO()
-    cliente_id = input("ID do cliente: ")
+    cliente_id = input("ID do cliente: ").strip()
 
     pedidos = dao.listar_pedidos_cliente(cliente_id)
+    if not pedidos:
+        print("Nenhum pedido encontrado.")
+        return menu_pedidos()
+    cliente_nome = pedidos[0].nome_cliente
+    print("\n==============================")
+    print(f"Cliente {cliente_id} - {cliente_nome}")
+    print("==============================")
+
     for p in pedidos:
-        print(f"{p.codigo} | {p.nome} | {p.status}")
+        print(
+            f"Pedido {p.codigo} | "
+            f"Restaurante {p.restaurante_id} - {p.nome_restaurante} | "
+            f"Entregador {p.entregador_id} - {p.nome_entregador} | "
+            f"{p.nome} | "
+            f"{p.status} | "
+            f"{p.endereco_entrega}"
+        )
+
+    menu_pedidos()
+
+
+
+def menu_listar_pedidos_restaurante():
+    dao = PedidosDAO()
+    restaurante_id = input("ID do restaurante: ").strip()
+
+    pedidos = dao.listar_pedidos_restaurante(restaurante_id)
+    if not pedidos:
+        print("Nenhum pedido encontrado.")
+        return menu_pedidos()
+
+    restaurante_nome = pedidos[0].nome_restaurante
+    print("\n==============================")
+    print(f"Restaurante {restaurante_id} - {restaurante_nome}")
+    print("==============================")
+
+    for p in pedidos:
+        print(
+            f"Pedido {p.codigo} | "
+            f"Cliente {p.cliente_id} - {p.nome_cliente} | "
+            f"Entregador {p.entregador_id} - {p.nome_entregador} | "
+            f"{p.nome} | "
+            f"{p.status} | "
+            f"{p.endereco_entrega}"
+        )
+
+    menu_pedidos()
+
+def menu_listar_pedidos_entregadores():
+    dao = PedidosDAO()
+    entregador_id = input("ID do entregador: ").strip()
+
+    pedidos = dao.listar_pedidos_entregador(entregador_id)
+    if not pedidos:
+        print("Nenhum pedido encontrado.")
+        return menu_pedidos()
+
+    # imprime o entregador UMA VEZ
+    entregador_nome = pedidos[0].nome_entregador
+    print("\n==============================")
+    print(f"Entregador {entregador_id} - {entregador_nome}")
+    print("==============================")
+
+    for p in pedidos:
+        print(
+            f"Pedido {p.codigo} | "
+            f"Cliente {p.cliente_id} - {p.nome_cliente} | "
+            f"Restaurante {p.restaurante_id} - {p.nome_restaurante} | "
+            f"{p.nome} | "
+            f"{p.status} | "
+            f"{p.endereco_entrega}"
+        )
 
     menu_pedidos()
 

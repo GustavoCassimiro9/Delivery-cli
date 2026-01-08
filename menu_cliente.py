@@ -189,7 +189,6 @@ def menu_remover_telefone_cliente():
 
     return menu_cliente()
 
-# --------- FAVORITOS ---------
 
 def menu_listar_favoritos_cliente():
     dao = ClientesDAO()

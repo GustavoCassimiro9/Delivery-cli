@@ -10,32 +10,132 @@ class PedidosDAO(object):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT id,
-                   cliente_id,
-                   restaurante_id,
-                   entregador_id,
-                   nome,
-                   status,
-                   endereco_entrega
-            FROM pedidos
-            WHERE cliente_id = %s
-            ORDER BY id
+            SELECT 
+                p.id,
+                p.cliente_id,
+                c.nome AS nome_cliente,
+                p.restaurante_id,
+                r.nome AS nome_restaurante,
+                p.entregador_id,
+                e.nome AS nome_entregador,
+                p.nome,
+                p.status,
+                p.endereco_entrega
+            FROM pedidos p
+            JOIN clientes c     ON c.id = p.cliente_id
+            JOIN restaurantes r ON r.id = p.restaurante_id
+            JOIN entregadores e ON e.id = p.entregador_id
+            WHERE p.cliente_id = %s
+            ORDER BY p.id
         """, (cliente_id,))
 
         for linha in cur.fetchall():
             p = Pedidos()
             p.codigo = linha[0]
             p.cliente_id = linha[1]
-            p.restaurante_id = linha[2]
-            p.entregador_id = linha[3]
-            p.nome = linha[4]
-            p.status = linha[5]
-            p.endereco_entrega = linha[6]
+            p.nome_cliente = linha[2]
+            p.restaurante_id = linha[3]
+            p.nome_restaurante = linha[4]
+            p.entregador_id = linha[5]
+            p.nome_entregador = linha[6]
+            p.nome = linha[7]
+            p.status = linha[8]
+            p.endereco_entrega = linha[9]
             resultado.append(p)
 
         cur.close()
         conn.close()
         return resultado
+
+
+    def listar_pedidos_restaurante(self, restaurante_id):
+        resultado = []
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT 
+                p.id,
+                p.cliente_id,
+                c.nome AS nome_cliente,
+                p.restaurante_id,
+                r.nome AS nome_restaurante,
+                p.entregador_id,
+                e.nome AS nome_entregador,
+                p.nome,
+                p.status,
+                p.endereco_entrega
+            FROM pedidos p
+            JOIN clientes c     ON c.id = p.cliente_id
+            JOIN restaurantes r ON r.id = p.restaurante_id
+            JOIN entregadores e ON e.id = p.entregador_id
+            WHERE p.restaurante_id = %s
+            ORDER BY p.id
+        """, (restaurante_id,))
+
+        for linha in cur.fetchall():
+            p = Pedidos()
+            p.codigo = linha[0]
+            p.cliente_id = linha[1]
+            p.nome_cliente = linha[2]
+            p.restaurante_id = linha[3]
+            p.nome_restaurante = linha[4]
+            p.entregador_id = linha[5]
+            p.nome_entregador = linha[6]
+            p.nome = linha[7]
+            p.status = linha[8]
+            p.endereco_entrega = linha[9]
+            resultado.append(p)
+
+        cur.close()
+        conn.close()
+        return resultado
+
+
+    def listar_pedidos_entregador(self, entregador_id):
+        resultado = []
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT 
+                p.id,
+                p.cliente_id,
+                c.nome AS nome_cliente,
+                p.restaurante_id,
+                r.nome AS nome_restaurante,
+                p.entregador_id,
+                e.nome AS nome_entregador,
+                p.nome,
+                p.status,
+                p.endereco_entrega
+            FROM pedidos p
+            JOIN clientes c     ON c.id = p.cliente_id
+            JOIN restaurantes r ON r.id = p.restaurante_id
+            JOIN entregadores e ON e.id = p.entregador_id
+            WHERE p.entregador_id = %s
+            ORDER BY p.id
+        """, (entregador_id,))
+
+        for linha in cur.fetchall():
+            p = Pedidos()
+            p.codigo = linha[0]
+            p.cliente_id = linha[1]
+            p.nome_cliente = linha[2]
+            p.restaurante_id = linha[3]
+            p.nome_restaurante = linha[4]
+            p.entregador_id = linha[5]
+            p.nome_entregador = linha[6]   
+            p.nome = linha[7]
+            p.status = linha[8]
+            p.endereco_entrega = linha[9]
+            resultado.append(p)
+
+        cur.close()
+        conn.close()
+        return resultado
+
+
 
 
     def listar(self, pedido_id):
