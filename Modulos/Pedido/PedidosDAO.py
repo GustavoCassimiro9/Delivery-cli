@@ -1,5 +1,5 @@
 from enum import Enum
-from Modulos.Pedido.models import Pedidos
+from Modulos.Pedido.models.Pedidos import Pedidos
 from db import get_connection, existe_id
 from Modulos.Pedido.models.ItemPedido import ItemPedido
 
@@ -329,7 +329,7 @@ class PedidosDAO(object):
         conn.close()
         return resultado
     
-    def adicionar_item(self, pedido_id, produto_id, quantidade):
+    def atualizar_item_pedido(self, pedido_id, produto_id, quantidade):
         conn = get_connection()
         cur = conn.cursor()
 
@@ -349,9 +349,42 @@ class PedidosDAO(object):
                 return False
 
             cur.execute("""
-                INSERT INTO pedido_itens (pedido_id, produto_id, quantidade)
-                VALUES (%s, %s, %s)
-            """, (pedido_id, produto_id, quantidade))
+                SELECT quantidade
+                FROM item_pedidos
+                WHERE pedido_id = %s AND produto_id = %s
+                FOR UPDATE
+            """, (pedido_id, produto_id))
+
+            item = cur.fetchone()
+
+            if not item:
+                return self.adicionar_item(pedido_id, produto_id, quantidade)
+
+            cur.execute(
+                "SELECT preco FROM produtos WHERE id = %s",
+                (produto_id,)
+            )
+            row_prod = cur.fetchone()
+
+            if not row_prod:
+                print("Produto não existe.")
+                return False
+
+            preco = row_prod[0]
+            nova_qtd = item[0] + quantidade
+
+            if nova_qtd <= 0:
+                cur.execute("""
+                    DELETE FROM item_pedidos
+                    WHERE pedido_id = %s AND produto_id = %s
+                """, (pedido_id, produto_id))
+            else:
+                cur.execute("""
+                    UPDATE item_pedidos
+                    SET quantidade = %s,
+                        preco = %s
+                    WHERE pedido_id = %s AND produto_id = %s
+                """, (nova_qtd, preco, pedido_id, produto_id))
 
             conn.commit()
             return True
@@ -359,3 +392,65 @@ class PedidosDAO(object):
         finally:
             cur.close()
             conn.close()
+
+
+    def remover_item(self, pedido_id, produto_id, quantidade_remover):
+        conn = get_connection()
+        cur = conn.cursor()
+
+        try:
+            cur.execute(
+                "SELECT status FROM pedidos WHERE id = %s",
+                (pedido_id,)
+            )
+            row = cur.fetchone()
+
+            if not row:
+                print("Pedido não existe.")
+                return False
+
+            if row[0] != StatusPedido.PENDENTE.value:
+                print(f"Só é possível alterar pedidos {StatusPedido.PENDENTE.value}.")
+                return False
+
+            cur.execute("""
+                SELECT quantidade
+                FROM item_pedidos
+                WHERE pedido_id = %s AND produto_id = %s
+                FOR UPDATE
+            """, (pedido_id, produto_id))
+
+            item = cur.fetchone()
+
+            if not item:
+                print("Item não encontrado no pedido.")
+                return False
+
+            quantidade_atual = item[0]
+
+            if quantidade_remover <= 0:
+                print("Quantidade inválida.")
+                return False
+
+            nova_qtd = quantidade_atual - quantidade_remover
+
+            if nova_qtd > 0:
+                cur.execute("""
+                    UPDATE item_pedidos
+                    SET quantidade = %s
+                    WHERE pedido_id = %s AND produto_id = %s
+                """, (nova_qtd, pedido_id, produto_id))
+            else:
+                cur.execute("""
+                    DELETE FROM item_pedidos
+                    WHERE pedido_id = %s AND produto_id = %s
+                """, (pedido_id, produto_id))
+
+            conn.commit()
+            return True
+
+        finally:
+            cur.close()
+            conn.close()
+
+    

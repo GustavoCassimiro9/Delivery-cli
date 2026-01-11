@@ -11,8 +11,10 @@ def menu_pedidos():
     print("3 - Listar Pedidos do Restaurante")
     print("4 - Listar Pedidos do Entregador")
     print("5 - Listar Itens do Pedido")
-    print("6 - Cancelar Pedido")
-    print("7 - Finalizar Pedido")
+    print("6 - Adicionar item ao pedido")
+    print("7 - Remover item do pedido")
+    print("8 - Cancelar Pedido")
+    print("9 - Finalizar Pedido")
     print("0 - Voltar")
     print("============================")
 
@@ -29,8 +31,12 @@ def menu_pedidos():
     elif opcao == "5":
         menu_listar_itens_pedido()
     elif opcao == "6":
-        menu_cancelar_pedido()
+        menu_adicionar_item_pedido()
     elif opcao == "7":
+        menu_remover_item_pedido()
+    elif opcao == "8":
+        menu_cancelar_pedido()
+    elif opcao == "9":
         menu_finalizar_pedido()
 
 
@@ -201,6 +207,66 @@ def menu_cancelar_pedido():
         return menu_pedidos()
     if p and p.status == StatusPedido.PENDENTE.value:
         dao.atualizar_status(pedido_id, StatusPedido.CANCELADO.value)
+
+    menu_pedidos()
+
+def menu_adicionar_item_pedido():
+    dao = PedidosDAO()
+
+    pedido_id = input("ID do pedido: ").strip()
+
+    p = dao.listar(pedido_id)
+    if not p:
+        print("Pedido não existe.")
+        return menu_pedidos()
+
+    if p.status != StatusPedido.PENDENTE.value:
+        print(f"Só é possível adicionar itens em pedidos {StatusPedido.PENDENTE.value}.")
+        return menu_pedidos()
+
+    produto_id = input("ID do produto: ").strip()
+
+    try:
+        quantidade = int(input("Quantidade: "))
+        if quantidade <= 0:
+            raise ValueError
+    except ValueError:
+        print("Quantidade inválida.")
+        return menu_pedidos()
+
+    if dao.atualizar_item_pedido(pedido_id, produto_id, quantidade):
+        print("Item adicionado com sucesso.")
+
+    menu_pedidos()
+
+def menu_remover_item_pedido():
+    dao = PedidosDAO()
+
+    pedido_id = input("ID do pedido: ").strip()
+
+    p = dao.listar(pedido_id)
+    if not p:
+        print("Pedido não existe.")
+        return menu_pedidos()
+
+    if p.status != StatusPedido.PENDENTE.value:
+        print(f"Só é possível remover itens de pedidos {StatusPedido.PENDENTE.value}.")
+        return menu_pedidos()
+
+    itens = dao.listar_itens_pedido(pedido_id)
+    if not itens:
+        print("Pedido não possui itens.")
+        return menu_pedidos()
+
+    print("\nITENS DO PEDIDO:")
+    for i in itens:
+        print(f"{i.produto_id} | {i.nome_produto} | {i.quantidade}")
+
+    produto_id = input("\nID do produto para remover: ").strip()
+    qtd = int(input("Quantidade para remover: "))
+
+    if dao.remover_item(pedido_id, produto_id, qtd):
+        print("Item removido com sucesso.")
 
     menu_pedidos()
 
