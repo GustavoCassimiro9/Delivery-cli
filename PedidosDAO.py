@@ -179,15 +179,24 @@ class PedidosDAO(object):
         return p
 
     def criar_pedido(self, cliente_id, restaurante_id, entregador_id, nome, status, endereco):
-        if not existe_id("clientes", int(cliente_id)):
-            return None
-        if not existe_id("restaurantes", int(restaurante_id)):
-            return None
-        if not existe_id("entregadores", int(entregador_id)):
-            return None
-
         conn = get_connection()
         cur = conn.cursor()
+
+        cliente_ok, restaurante_ok, entregador_ok = self._validar_fks_pedido(
+            cliente_id, restaurante_id, entregador_id, cur
+        )
+        
+        if not cliente_ok:
+            print(" Cliente não encontrado ")
+            return None
+
+        if not restaurante_ok:
+            print(" Restaurante não encontrado ")
+            return None
+
+        if not entregador_ok:
+            print(" Entregador não encontrado ")
+            return None
 
         cur.execute("""
             INSERT INTO pedidos
@@ -201,6 +210,16 @@ class PedidosDAO(object):
         cur.close()
         conn.close()
         return pedido_id
+
+    def _validar_fks_pedido(self, cliente_id, restaurante_id, entregador_id, cur):
+        cur.execute("""
+            SELECT
+                EXISTS (SELECT 1 FROM clientes WHERE id = %s),
+                EXISTS (SELECT 1 FROM restaurantes WHERE id = %s),
+                EXISTS (SELECT 1 FROM entregadores WHERE id = %s)
+        """, (cliente_id, restaurante_id, entregador_id))
+
+        return cur.fetchone()
 
     def atualizar_status(self, pedido_id, status):
        
