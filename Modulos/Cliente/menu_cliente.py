@@ -1,4 +1,4 @@
-from ClientesDAO import ClientesDAO
+from Modulos.Cliente.ClientesDAO import ClientesDAO
 
 def menu_cliente():
     print("============================")

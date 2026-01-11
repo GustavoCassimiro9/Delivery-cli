@@ -1,5 +1,5 @@
 from db import get_connection, existe_id
-from Clientes import Clientes
+from Modulos.Cliente.models.Clientes import Clientes
 class ClientesDAO(object):
     def listarTodas(self):
         resultado = []

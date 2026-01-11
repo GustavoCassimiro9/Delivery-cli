@@ -1,4 +1,4 @@
-from EntregadoresDAO import EntregadoresDAO
+from Modulos.Entregador.EntregadoresDAO import EntregadoresDAO
 
 def menu_entregador():
     print("============================")

@@ -1,8 +1,8 @@
-from menu_pedido import menu_pedidos
-from menu_cliente import menu_cliente
-from menu_restaurante import menu_restaurante
-from menu_entregador import menu_entregador
-from menu_produto import menu_produtos
+from Modulos.Pedido.menu_pedido import menu_pedidos
+from Modulos.Cliente.menu_cliente import menu_cliente
+from Modulos.Restaurante.menu_restaurante import menu_restaurante
+from Modulos.Entregador.menu_entregador import menu_entregador
+from Modulos.Produtos.menu_produto import menu_produtos
 
 def mostrar_menu():
     while True:

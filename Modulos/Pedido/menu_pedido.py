@@ -1,13 +1,6 @@
 from enum import Enum
-from PedidosDAO import PedidosDAO
-from ProdutosDAO import ProdutosDAO
-
-
-class StatusPedido(Enum):
-    PENDENTE = "PENDENTE"
-    FINALIZADO = "FINALIZADO"
-    CANCELADO = "CANCELADO"
-
+from Modulos.Pedido.PedidosDAO import PedidosDAO, StatusPedido
+from Modulos.Produtos.ProdutosDAO import ProdutosDAO
 
 def menu_pedidos():
     print("============================")

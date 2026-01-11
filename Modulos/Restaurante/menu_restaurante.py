@@ -1,4 +1,4 @@
-from RestaurantesDAO import RestaurantesDAO
+from Modulos.Restaurante.RestaurantesDAO import RestaurantesDAO
 
 def menu_restaurante():
     print("============================")

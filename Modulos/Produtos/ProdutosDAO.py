@@ -1,5 +1,5 @@
 from db import get_connection
-from Produtos import Produtos
+from Modulos.Produtos.models.Produtos import Produtos
 
 class ProdutosDAO(object):
 

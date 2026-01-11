@@ -1,4 +1,4 @@
-from ProdutosDAO import ProdutosDAO
+from Modulos.Produtos.ProdutosDAO import ProdutosDAO
 
 def menu_produtos():
     print("============================")
