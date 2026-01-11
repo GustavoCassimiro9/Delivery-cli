@@ -179,6 +179,14 @@ class PedidosDAO(object):
         return p
 
     def criar_pedido(self, cliente_id, restaurante_id, entregador_id, nome, status, endereco):
+        
+        if not existe_id("clientes", int(cliente_id)): 
+            return None 
+        if not existe_id("restaurantes", int(restaurante_id)): 
+            return None 
+        if not existe_id("entregadores", int(entregador_id)): 
+            return None
+        
         conn = get_connection()
         cur = conn.cursor()
 
